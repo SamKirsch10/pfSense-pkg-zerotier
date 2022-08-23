@@ -27,6 +27,7 @@ jobs:
           path: version
 
   build:
+    needs: tag
     runs-on: macos-12
     name: Build job in FreeBSD
     steps:
