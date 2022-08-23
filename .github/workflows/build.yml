@@ -3,9 +3,29 @@ name: Build
 on: [push]
 
 jobs:
-  test:
+  tag:
+    runs-on: ubuntu-latest
+    name: Get new tag
+    steps:
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+        id: auto_tagger
+
+      - name: Write out version
+        run: echo "${{ steps.auto_tagger.outputs.new_tag }} > version"
+
+      - name: Save pkg
+        uses: actions/upload-artifact@v2
+        with:
+          name: pfSense-pkg-zerotier-version
+          path: version
+
+  build:
     runs-on: macos-12
-    name: A job to run test in FreeBSD
+    name: Build job in FreeBSD
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
@@ -37,24 +57,40 @@ jobs:
           cd FreeBSD-ports-devel/net/pfSense-pkg-zerotier
           make clean ; make package
           ls -lah work/pkg/
-          cp work/pkg/pfSense-pkg-zerotier-*.pkg $OLD_DIR/
+          cp work/pkg/pfSense-pkg-zerotier-*.pkg $OLD_DIR/pfSense-pkg-zerotier.pkg
           cd $OLD_DIR
           ls -lah
           rm -rf FreeBSD-ports-devel
-      
-    - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@1.36.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WITH_V: true
-      id: auto_tagger
-
-    - name: Tag release w/ artifact
-      uses: "marvinpinto/action-automatic-releases@latest"
+    
+    - name: Save pkg
+      uses: actions/upload-artifact@v2
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: false
-        automatic_release_tag: ${{ steps.auto_tagger.outputs.new_tag }}
-        files: |
-          pfSense-pkg-zerotier-*.txz
-          
+        name: pfSense-pkg-zerotier-pkg
+        path: pfSense-pkg-zerotier.pkg
+
+  release:
+    runs-on: ubuntu-latest
+    name: Post artifact and cut release
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: pfSense-pkg-zerotier-pkg
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: pfSense-pkg-zerotier-version
+
+      - name: Get version
+        id: vars
+        run: echo ::set-output name=version::$(cat version)
+        
+      - name: Tag release w/ artifact
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: ${{ steps.vars.outputs.version }}
+          files: |
+            pfSense-pkg-zerotier.pkg
+
+
