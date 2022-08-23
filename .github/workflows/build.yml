@@ -7,21 +7,15 @@ jobs:
     runs-on: macos-12
     name: A job to run test in FreeBSD
     steps:
-    - name: Checkout FreeBSD-ports
-      uses: actions/checkout@v3
-      with:
-        repository: pfsense/FreeBSD-ports
-        path: FreeBSD-ports
-   
     - name: Checkout repo
       uses: actions/checkout@v3
       with:
-        path: FreeBSD-ports/net/pfSense-pkg-zerotier
+        path: pfSense-pkg-zerotier
     
-    - name: Tarball everything since FreeBSD task rsyncs stuff back n forth (speed this up)
+    - name: Get ZIP of FreeBSD repo
       run: |
-        tar -zcvf FreeBSD-ports.tar.gz FreeBSD-ports/
-        rm -rf FreeBSD-ports
+        wget https://github.com/pfsense/FreeBSD-ports/archive/refs/heads/devel.zip
+        ls -lah
     
     # Building in FreeBSD this way takes a looong time
     - name: Build in FreeBSD
@@ -35,8 +29,10 @@ jobs:
           echo "ALLOW_UNSUPPORTED_SYSTEM=YES" >> /etc/make.conf
           OLD_DIR=$(pwd)
           ls -lah
-          tar -xf FreeBSD-ports.tar.gz
-          rm FreeBSD-ports.tar.gz
+          unzip FreeBSD-ports-devel.zip
+          rm FreeBSD-ports-devel.zip
+          ls -lah
+          mv pfSense-pkg-zerotier FreeBSD-ports/net/
           cd FreeBSD-ports/net/pfSense-pkg-zerotier
           make clean ; make package
           ls -lah work/pkg/
