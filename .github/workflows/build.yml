@@ -15,6 +15,7 @@ jobs:
     - name: Get ZIP of FreeBSD repo
       run: |
         wget https://github.com/pfsense/FreeBSD-ports/archive/refs/heads/devel.zip
+        mv devel.zip FreeBSD-ports-devel.zip
         ls -lah
     
     # Building in FreeBSD this way takes a looong time
