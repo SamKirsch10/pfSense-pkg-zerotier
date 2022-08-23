@@ -37,10 +37,10 @@ jobs:
           cd FreeBSD-ports-devel/net/pfSense-pkg-zerotier
           make clean ; make package
           ls -lah work/pkg/
-          cp work/pkg/pfSense-pkg-zerotier-*.txz $OLD_DIR/
+          cp work/pkg/pfSense-pkg-zerotier-*.pkg $OLD_DIR/
           cd $OLD_DIR
           ls -lah
-          rm -rf FreeBSD-ports
+          rm -rf FreeBSD-ports-devel
       
     - name: Bump version and push tag
       uses: anothrNick/github-tag-action@1.36.0
