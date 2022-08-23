@@ -15,7 +15,7 @@ jobs:
         id: auto_tagger
 
       - name: Write out version
-        run: echo "${{ steps.auto_tagger.outputs.new_tag }} > version"
+        run: echo -n ${{ steps.auto_tagger.outputs.new_tag }} > version
 
       - name: Save version file
         uses: actions/upload-artifact@v2
