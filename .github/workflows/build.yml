@@ -19,7 +19,7 @@ jobs:
         release: 12.3
         usesh: true
         prepare: |
-          pkg install -y curl git
+          pkg install -y git
 
         run: |
           pwd
