@@ -18,6 +18,11 @@ jobs:
       with:
         path: FreeBSD-ports/net/pfSense-pkg-zerotier
     
+    - name: Tarball everything since FreeBSD task rsyncs stuff back n forth (speed this up)
+      run: |
+        tar -zcvf FreeBSD-ports.tar.gz FreeBSD-ports/
+        rm -rf FreeBSD-ports
+    
     # Building in FreeBSD this way takes a looong time
     - name: Build in FreeBSD
       id: test
@@ -29,12 +34,16 @@ jobs:
         run: |
           echo "ALLOW_UNSUPPORTED_SYSTEM=YES" >> /etc/make.conf
           OLD_DIR=$(pwd)
+          ls -lah
+          tar -xf FreeBSD-ports.tar.gz
+          rm FreeBSD-ports.tar.gz
           cd FreeBSD-ports/net/pfSense-pkg-zerotier
           make clean ; make package
           ls -lah work/pkg/
           cp work/pkg/pfSense-pkg-zerotier-*.txz $OLD_DIR/
           cd $OLD_DIR
           ls -lah
+          rm -rf FreeBSD-ports
       
     - name: Bump version and push tag
       uses: anothrNick/github-tag-action@1.36.0
