@@ -7,18 +7,47 @@ jobs:
     runs-on: macos-12
     name: A job to run test in FreeBSD
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        path: pfSense-pkg-zerotier
     
     - name: Test in FreeBSD
       id: test
       uses: vmactions/freebsd-vm@v0
       with:
+        release: 12.3
         usesh: true
         prepare: |
           pkg install -y curl git
 
         run: |
           pwd
-          ls -lah
-          git clone https://github.com/pfsense/FreeBSD-ports.git
+          OLD_DIR=$(pwd)
           echo "ALLOW_UNSUPPORTED_SYSTEM=YES" >> /etc/make.conf
+          git clone https://github.com/pfsense/FreeBSD-ports.git
+          ls -lah
+          mv pfSense-pkg-zerotier FreeBSD-ports/net/
+          cd FreeBSD-ports/net/pfSense-pkg-zerotier
+          make clean ; make package
+          ls -lah
+          cp work/pkg/pfSense-pkg-zerotier-*.txz $OLD_DIR/
+          cd $OLD_DIR
+          ls -lah
+      
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@1.36.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: true
+      id: auto_tagger
+
+    - name: Tag release w/ artifact
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        automatic_release_tag: ${{ steps.auto_tagger.outputs.new_tag }}
+        files: |
+          pfSense-pkg-zerotier-*.txz
+          
