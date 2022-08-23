@@ -30,7 +30,7 @@ jobs:
           echo "ALLOW_UNSUPPORTED_SYSTEM=YES" >> /etc/make.conf
           OLD_DIR=$(pwd)
           ls -lah
-          unzip FreeBSD-ports-devel.zip
+          unzip -q FreeBSD-ports-devel.zip
           rm FreeBSD-ports-devel.zip
           ls -lah
           mv pfSense-pkg-zerotier FreeBSD-ports/net/
