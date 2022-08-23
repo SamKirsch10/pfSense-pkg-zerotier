@@ -14,7 +14,7 @@ jobs:
         uses: anothrNick/github-tag-action@1.36.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
+          WITH_V: false
         id: auto_tagger
 
       - name: Write out version
@@ -40,6 +40,14 @@ jobs:
         wget https://github.com/pfsense/FreeBSD-ports/archive/refs/heads/devel.zip
         mv devel.zip FreeBSD-ports-devel.zip
         ls -lah
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: pfSense-pkg-zerotier-version
+
+    - name: Get version
+      id: vars
+      run: echo ::set-output name=version::$(cat version)
     
     # Building in FreeBSD this way takes a looong time
     - name: Build in FreeBSD
@@ -58,7 +66,7 @@ jobs:
           ls -lah
           mv pfSense-pkg-zerotier FreeBSD-ports-devel/net/
           cd FreeBSD-ports-devel/net/pfSense-pkg-zerotier
-          make clean ; make package
+          make clean ; make PORTVERSION=${{ steps.vars.outputs.version }} package
           ls -lah work/pkg/
           cp work/pkg/pfSense-pkg-zerotier-*.pkg $OLD_DIR/pfSense-pkg-zerotier.pkg
           cd $OLD_DIR
