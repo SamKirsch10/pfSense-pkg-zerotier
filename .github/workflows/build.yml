@@ -7,30 +7,31 @@ jobs:
     runs-on: macos-12
     name: A job to run test in FreeBSD
     steps:
+    - name: Checkout FreeBSD-ports
+      uses: actions/checkout@v3
+      with:
+        repository: pfsense/FreeBSD-ports
+        path: FreeBSD-ports
+   
     - name: Checkout repo
       uses: actions/checkout@v3
       with:
-        path: pfSense-pkg-zerotier
+        path: FreeBSD-ports/net/pfSense-pkg-zerotier
     
-    - name: Test in FreeBSD
+    # Building in FreeBSD this way takes a looong time
+    - name: Build in FreeBSD
       id: test
       uses: vmactions/freebsd-vm@v0
       with:
         release: 12.3
         usesh: true
-        prepare: |
-          pkg install -y git
 
         run: |
-          pwd
-          OLD_DIR=$(pwd)
           echo "ALLOW_UNSUPPORTED_SYSTEM=YES" >> /etc/make.conf
-          git clone https://github.com/pfsense/FreeBSD-ports.git
-          ls -lah
-          mv pfSense-pkg-zerotier FreeBSD-ports/net/
+          OLD_DIR=$(pwd)
           cd FreeBSD-ports/net/pfSense-pkg-zerotier
           make clean ; make package
-          ls -lah
+          ls -lah work/pkg/
           cp work/pkg/pfSense-pkg-zerotier-*.txz $OLD_DIR/
           cd $OLD_DIR
           ls -lah
