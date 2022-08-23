@@ -17,7 +17,7 @@ jobs:
       - name: Write out version
         run: echo "${{ steps.auto_tagger.outputs.new_tag }} > version"
 
-      - name: Save pkg
+      - name: Save version file
         uses: actions/upload-artifact@v2
         with:
           name: pfSense-pkg-zerotier-version
@@ -69,6 +69,7 @@ jobs:
         path: pfSense-pkg-zerotier.pkg
 
   release:
+    needs: build
     runs-on: ubuntu-latest
     name: Post artifact and cut release
     steps:
