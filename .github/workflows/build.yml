@@ -34,7 +34,7 @@ jobs:
           rm FreeBSD-ports-devel.zip
           ls -lah
           mv pfSense-pkg-zerotier FreeBSD-ports/net/
-          cd FreeBSD-ports/net/pfSense-pkg-zerotier
+          cd FreeBSD-ports-devel/net/pfSense-pkg-zerotier
           make clean ; make package
           ls -lah work/pkg/
           cp work/pkg/pfSense-pkg-zerotier-*.txz $OLD_DIR/
